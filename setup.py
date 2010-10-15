@@ -1,15 +1,13 @@
 from setuptools import setup, find_packages
-version="0.1"
+import os
+here = os.path.dirname(__file__)
+readme = open(os.path.join(here, "README.txt")).read()
+version="0.2"
 
 setup(
     name="jsonrpc2",
     description="WSGI Framework for JSON RPC 2.0",
-    long_description="""\
-jsonrpc2 is WSGI Framework for JSON RPC 2.0.
-JSON RPC 2.0 Spec can be seen on http://groups.google.com/group/json-rpc/web/json-rpc-1-2-proposal.
-
-
-""",
+    long_description=readme,
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
@@ -18,7 +16,8 @@ JSON RPC 2.0 Spec can be seen on http://groups.google.com/group/json-rpc/web/jso
         ],
     author='Atsushi Odagiri',
     author_email='aodagx@gmail.com',
-    keywords='wsgi request web http',
+    keywords='wsgi request web http json rpc',
+    license="MIT",
     url='http://bitbucket.org/aodag/microapps/overview/',
     version=version,
     install_requires=[
@@ -26,6 +25,11 @@ JSON RPC 2.0 Spec can be seen on http://groups.google.com/group/json-rpc/web/jso
         "WebOb",
     ],
     package_dir={'':'src'},
+    test_suite="nose.collector",
+    tests_require=[
+        "Nose",
+        "WebTest",
+        ],
     packages=find_packages("src", exclude=['tests']),
 )
 
