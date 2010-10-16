@@ -39,7 +39,7 @@ import itertools
 from webob import Request, Response
 from webob import exc
 
-class JsonRpcApplication(object):
+class JsonRpc(object):
     def __init__(self, methods=None):
         if methods is not None:
             self.methods = methods
@@ -116,7 +116,26 @@ class JsonRpcApplication(object):
                              'message':errors[INTERNAL_ERROR],
                              'data':str(e)}}
 
+    def call_procedures(self, data):
+        if isinstance(data, dict):
+            resdata = self.process(data)
+        elif isinstance(data, list):
+            if len([x for x in data if not isinstance(x, dict)]):
+                resdata = {'jsonrpc':'2.0',
+                            'id':None,
+                            'error':{'code':INVALID_REQUEST,
+                                    'message':errors[INVALID_REQUEST]}}
+            else:
+                resdata = [d for d in (self.process(d) for d in data) if d is not None]
+            
+        return resdata
 
+
+
+
+class JsonRpcApplication(object):
+    def __init__(self, rpcs=None):
+        self.rpc = JsonRpc(rpcs)
 
 
     def __call__(self, environ, start_response):
@@ -135,24 +154,14 @@ class JsonRpcApplication(object):
                                 'message':errors[PARSE_ERROR]}}
 
         else:
-            
-            if isinstance(data, dict):
-                resdata = self.process(data)
-            elif isinstance(data, list):
-                if len([x for x in data if not isinstance(x, dict)]):
-                    resdata = {'jsonrpc':'2.0',
-                               'id':None,
-                               'error':{'code':INVALID_REQUEST,
-                                        'message':errors[INVALID_REQUEST]}}
-                else:
-                    resdata = [d for d in (self.process(d) for d in data) if d is not None]
-            
+            resdata = self.rpc.call_procedures(data) 
 
         response = Response(content_type="application/json")
 
         if resdata:
             response.body = json.dumps(resdata)
         return response(environ, start_response)
+
 
 def make_app(global_conf, **app_conf):
     conf = global_conf.copy()

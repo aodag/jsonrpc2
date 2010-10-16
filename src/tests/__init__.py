@@ -270,9 +270,10 @@ def test_rpc_call_batch_invalid_json():
 def test_add_module():
     app = JsonRpcApplication()
     import sample
-    app.addModule(sample)
-    print app.methods
-    assert len(app.methods) == 1
+    app.rpc.addModule(sample)
+    print app.rpc.methods
+    assert len(app.rpc.methods) == 1
+
     app = TestApp(app)
     data = {"jsonrpc": "2.0", "method": "tests.sample.greeting", "params": {u"n":u"あ"}, "id": 4}
     res = app.post('/', params=json.dumps(data),

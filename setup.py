@@ -30,6 +30,9 @@ setup(
         "Nose",
         "WebTest",
         ],
+    setup_requires=[
+        "Nose",
+        ],
     packages=find_packages("src", exclude=['tests']),
 )
 
