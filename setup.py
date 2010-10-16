@@ -2,12 +2,13 @@ from setuptools import setup, find_packages
 import os
 here = os.path.dirname(__file__)
 readme = open(os.path.join(here, "README.txt")).read()
+changelog = open(os.path.join(here, "ChangeLog")).read()
 version="0.2"
 
 setup(
     name="jsonrpc2",
     description="WSGI Framework for JSON RPC 2.0",
-    long_description=readme,
+    long_description=readme + "\n" + changelog,
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",

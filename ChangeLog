@@ -1,0 +1,6 @@
+0.2
+-----------------------------------------------
+
+- remove dependency to WebOb
+- split procedure call class from web application class
+
