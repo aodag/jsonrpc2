@@ -37,53 +37,64 @@ except ImportError:
 
 import itertools
 
-class JsonRpc(object):
+class JsonRpcException(Exception):
+    """
+    >>> exc = JsonRpcException(1, INVALID_REQUEST)
+    >>> str(exc)
+    '{"jsonrpc": "2.0", "id": 1, "error": {"message": "Invalid Request", "code": -32600}}'
+
+    """
+
+    def __init__(self, rpc_id, code, data=None):
+        self.rpc_id = rpc_id
+        self.code = code
+        self.data = data
+    
+    @property
+    def message(self):
+        return errors[self.code]
+
+    def as_dict(self):
+        if self.data:
+            return {'jsonrpc':'2.0',
+                'id': self.rpc_id,
+                'error':{'code': self.code,
+                        'message':self.message,
+                        'data':self.data}}
+        else:
+            return {'jsonrpc':'2.0',
+                'id': self.rpc_id,
+                'error':{'code': self.code,
+                        'message':self.message}}
+
+    def __str__(self):
+        return json.dumps(self.as_dict())
+
+class JsonRpcBase(object):
     def __init__(self, methods=None):
         if methods is not None:
             self.methods = methods
         else:
             self.methods = {}
 
-    def addModule(self, mod):
-        name = mod.__name__
-        for k, v in ((k, v) for k, v in mod.__dict__.iteritems() if not k.startswith('_') and callable(v)):
-            self.add(name + '.' + k, v)
-
-    def add(self, name, func):
-        self.methods[name] = func
-
     def process(self, data):
 
         if data.get('jsonrpc') != "2.0":
-            return {'jsonrpc':'2.0',
-                    'id':data.get('id'),
-                    'error':{'code':INVALID_REQUEST,
-                             'message':errors[INVALID_REQUEST]}}
+            raise JsonRpcException(data.get('id'), INVALID_REQUEST)
+
         if 'method' not in data:
-            return {'jsonrpc':'2.0',
-                    'id':data.get('id'),
-                    'error':{'code':INVALID_REQUEST,
-                             'message':errors[INVALID_REQUEST]}}
+            raise JsonRpcException(data.get('id'), INVALID_REQUEST)
         
         methodname = data['method']
         if not isinstance(methodname, basestring):
-            return {'jsonrpc':'2.0',
-                    'id':data.get('id'),
-                    'error':{'code':INVALID_REQUEST,
-                             'message':errors[INVALID_REQUEST]}}
+            raise JsonRpcException(data.get('id'), INVALID_REQUEST)
             
         if methodname.startswith('_'):
-            return {'jsonrpc':'2.0',
-                    'id':data.get('id'),
-                    'error':{'code':METHOD_NOT_FOUND,
-                             'message':errors[METHOD_NOT_FOUND]}}
+            raise JsonRpcException(data.get('id'), METHOD_NOT_FOUND)
 
 
         if methodname not in self.methods:
-            return {'jsonrpc':'2.0',
-                    'id':data.get('id'),
-                    'error':{'code':METHOD_NOT_FOUND,
-                             'message':errors[METHOD_NOT_FOUND]}}
+            raise JsonRpcException(data.get('id'), METHOD_NOT_FOUND)
 
 
         method = self.methods[methodname]
@@ -94,10 +105,7 @@ class JsonRpc(object):
             elif isinstance(params, dict):
                 result = method(**dict([(str(k), v) for k, v in params.iteritems()]))
             else:
-                return {'jsonrpc':'2.0',
-                        'id':data.get('id'),
-                        'error':{'code':INVALID_REQUEST,
-                                 'message':errors[INVALID_REQUEST]}}
+                raise JsonRpcException(data.get('id'), METHOD_NOT_FOUND)
             resdata = None
             if data.get('id'):
 
@@ -108,15 +116,17 @@ class JsonRpc(object):
                     }
             return resdata
         except Exception, e:
-            return {'jsonrpc':'2.0',
-                    'id':data.get('id'),
-                    'error':{'code':INTERNAL_ERROR,
-                             'message':errors[INTERNAL_ERROR],
-                             'data':str(e)}}
+            raise JsonRpcException(data.get('id'), INTERNAL_ERROR, data=str(e))
 
-    def call_procedures(self, data):
+    def _call(self, data):
+        try:
+            return self.process(data)
+        except JsonRpcException, e:
+            return e.as_dict()
+
+    def __call__(self, data):
         if isinstance(data, dict):
-            resdata = self.process(data)
+            resdata = self._call(data)
         elif isinstance(data, list):
             if len([x for x in data if not isinstance(x, dict)]):
                 resdata = {'jsonrpc':'2.0',
@@ -124,10 +134,19 @@ class JsonRpc(object):
                             'error':{'code':INVALID_REQUEST,
                                     'message':errors[INVALID_REQUEST]}}
             else:
-                resdata = [d for d in (self.process(d) for d in data) if d is not None]
+                resdata = [d for d in (self._call(d) for d in data) if d is not None]
             
         return resdata
 
+
+class JsonRpc(JsonRpcBase):
+    def __init__(self, methods=None):
+        super(JsonRpc, self).__init__(methods)
+
+    def addModule(self, mod):
+        name = mod.__name__
+        for k, v in ((k, v) for k, v in mod.__dict__.iteritems() if not k.startswith('_') and callable(v)):
+            self.methods[name + '.' + k] = v
 
 
 
@@ -150,14 +169,12 @@ class JsonRpcApplication(object):
         try:
             body = environ['wsgi.input'].read(-1)
             data = json.loads(body)
+            resdata = self.rpc(data) 
         except ValueError, e:
             resdata = {'jsonrpc':'2.0',
                        'id':None,
                        'error':{'code':PARSE_ERROR,
                                 'message':errors[PARSE_ERROR]}}
-
-        else:
-            resdata = self.rpc.call_procedures(data) 
 
         start_response('200 OK',
                 [('Content-type', 'application/json')])
