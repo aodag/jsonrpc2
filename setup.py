@@ -19,16 +19,16 @@ setup(
     author_email='aodagx@gmail.com',
     keywords='wsgi request web http json rpc',
     license="MIT",
-    url='http://bitbucket.org/aodag/microapps/overview/',
+    url='http://hg.aodag.jp/jsonrpc2/',
     version=version,
     install_requires=[
-        "simplejson",
     ],
     package_dir={'':'src'},
     test_suite="nose.collector",
     tests_require=[
         "Nose",
         "WebTest",
+        "simplejson",
         ],
     setup_requires=[
         "Nose",

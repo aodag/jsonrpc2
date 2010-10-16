@@ -32,10 +32,10 @@ try:
 except ImportError:
     try:
         import django.utils.simplejson as json
-        sys.modules['json': = json
+        sys.modules['json'] = json
     except ImportError:
         import simplejson as json
-        sys.modules['json': = json
+        sys.modules['json'] = json
 
 import itertools
 
