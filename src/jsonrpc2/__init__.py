@@ -26,14 +26,16 @@ errors[INVALID_REQUEST] = "Invalid Request"
 errors[METHOD_NOT_FOUND] = "Method Not Found"
 errors[INVALID_PARAMS] = "Invalid Params"
 errors[INTERNAL_ERROR] = "Internal Error"
-
+import sys
 try:
     import json
 except ImportError:
     try:
         import django.utils.simplejson as json
+        sys.modules['json': = json
     except ImportError:
         import simplejson as json
+        sys.modules['json': = json
 
 import itertools
 
