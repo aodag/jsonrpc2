@@ -139,14 +139,16 @@ class JsonRpcApplication(object):
 
 
     def __call__(self, environ, start_response):
-        request = Request(environ)
-        if request.method != "POST":
-            raise exc.HTTPMethodNotAllowed
+        if environ['REQUEST_METHOD'] != "POST":
+            start_response('405 Method Not Allowed',
+                    [('Content-type', 'application/json')])
+            return [json.dumps('405 Method Not Allowed')]
 
-        if request.content_type != 'application/json':
+        if environ['CONTENT_TYPE'] != 'application/json':
             raise exc.HTTPBadRequest(body='Content-type must by application/json')
         try:
-            data = json.loads(request.body)
+            body = environ['wsgi.input'].read(-1)
+            data = json.loads(body)
         except ValueError, e:
             resdata = {'jsonrpc':'2.0',
                        'id':None,
