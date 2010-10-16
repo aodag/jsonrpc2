@@ -3,7 +3,7 @@ import os
 here = os.path.dirname(__file__)
 readme = open(os.path.join(here, "README.txt")).read()
 changelog = open(os.path.join(here, "ChangeLog")).read()
-version="0.2"
+version="0.2.1"
 
 setup(
     name="jsonrpc2",
