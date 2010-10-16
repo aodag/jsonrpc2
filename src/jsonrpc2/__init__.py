@@ -36,8 +36,6 @@ except ImportError:
         import simplejson as json
 
 import itertools
-from webob import Request, Response
-from webob import exc
 
 class JsonRpc(object):
     def __init__(self, methods=None):
@@ -141,11 +139,14 @@ class JsonRpcApplication(object):
     def __call__(self, environ, start_response):
         if environ['REQUEST_METHOD'] != "POST":
             start_response('405 Method Not Allowed',
-                    [('Content-type', 'application/json')])
-            return [json.dumps('405 Method Not Allowed')]
+                    [('Content-type', 'text/plain')])
+            return ["405 Method Not Allowed"]
 
         if environ['CONTENT_TYPE'] != 'application/json':
-            raise exc.HTTPBadRequest(body='Content-type must by application/json')
+            start_response('400 Bad Request',
+                    [('Content-type', 'text/plain')])
+            return ["Content-type must by application/json"]
+
         try:
             body = environ['wsgi.input'].read(-1)
             data = json.loads(body)
@@ -158,11 +159,13 @@ class JsonRpcApplication(object):
         else:
             resdata = self.rpc.call_procedures(data) 
 
-        response = Response(content_type="application/json")
+        start_response('200 OK',
+                [('Content-type', 'application/json')])
+
 
         if resdata:
-            response.body = json.dumps(resdata)
-        return response(environ, start_response)
+            return [json.dumps(resdata)]
+        return []
 
 
 def make_app(global_conf, **app_conf):

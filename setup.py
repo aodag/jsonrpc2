@@ -22,7 +22,6 @@ setup(
     version=version,
     install_requires=[
         "simplejson",
-        "WebOb",
     ],
     package_dir={'':'src'},
     test_suite="nose.collector",
