@@ -27,3 +27,13 @@ got results::
 
 >>> res.json
 {'jsonrpc': '2.0', 'id': 'greeting', 'result': 'Hello, world!'}
+
+
+lazy loading::
+
+>>> app.rpc.methods['sample.add'] = 'tests.sample:add'
+>>> call_values = {'jsonrpc':'2.0', 'method':'sample.add', 'id':'sample.add', 'params':[1, 2]}
+>>> res = testapp.post('/', params=json.dumps(call_values), content_type="application/json")
+>>> res.json
+{'jsonrpc': '2.0', 'id': 'sample.add', 'result': 3}
+

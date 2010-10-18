@@ -100,6 +100,13 @@ class JsonRpcBase(object):
         else:
             self.methods = {}
 
+    def load_method(self, method):
+        import sys
+        module_name, func_name = method.split(':', 1)
+        __import__(module_name)
+        method = getattr(sys.modules[module_name], func_name)
+        return method
+
     def process(self, data):
 
         if data.get('jsonrpc') != "2.0":
@@ -121,6 +128,9 @@ class JsonRpcBase(object):
 
 
         method = self.methods[methodname]
+        if isinstance(method, basestring):
+            method = self.load_method(method)
+
         try:
             params = data.get('params', [])
             if isinstance(params, list):
