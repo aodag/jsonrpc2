@@ -4,3 +4,8 @@
 - remove dependency to WebOb
 - split procedure call class from web application class
 
+0.2.1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- lazy loading from method name.
+
