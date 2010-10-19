@@ -9,3 +9,7 @@
 
 - lazy loading from method name.
 
+0.2.2
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- add dict interface.

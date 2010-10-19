@@ -1,3 +1,4 @@
 include README.txt
 include ChangeLog
+include rpc_example.txt
 

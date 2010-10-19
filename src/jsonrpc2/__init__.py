@@ -171,6 +171,15 @@ class JsonRpcBase(object):
             
         return resdata
 
+    def __getitem__(self, key):
+        return self.methods[key]
+
+    def __setitem__(self, key, value):
+        self.methods[key] = value
+
+    def __delitem__(self, key):
+        del self.methods[key]
+
 
 class JsonRpc(JsonRpcBase):
     def __init__(self, methods=None):

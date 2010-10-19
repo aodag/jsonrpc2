@@ -290,7 +290,7 @@ def test_add_module():
     assert res.status_int == 200
     d = res.json
     assert d.get('error') is None
-    assert d.get('result') == 4
+    assert d.get('result') == 3
 
 
 def test_lazy_loading1():
