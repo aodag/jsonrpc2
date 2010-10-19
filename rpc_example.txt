@@ -5,12 +5,18 @@ use raw rpc processor::
 
  >>> from jsonrpc2 import JsonRpc
  >>> rpc = JsonRpc()
+
+sample procedures::
+
  >>> def subtract(minuend, subtrahend):
  ...     return minuend - subtrahend
  >>> def update(*args):
  ...     pass
  >>> def foobar():
  ...     pass
+
+register procedures with dict interface::
+
  >>> rpc['subtract'] = subtract
  >>> rpc['update'] = update
  >>> rpc['foobar'] = foobar
@@ -51,6 +57,7 @@ Procedure Call with invalid JSON-RPC::
 
 
 Batched Call::
+
  >>> rpc['sum'] = lambda *args: reduce(lambda a, b: a + b, args)
  >>> def get_data():
  ...     return ["hello", 5]
