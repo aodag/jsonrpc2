@@ -13,3 +13,10 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - add dict interface.
+
+0.2.3
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- add entry point for paste.app_factory (TODO)
+- add PasteScript template (TODO)
+

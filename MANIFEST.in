@@ -1,4 +1,4 @@
 include README.txt
 include ChangeLog
 include rpc_example.txt
-
+recursive-include src/tests *.py

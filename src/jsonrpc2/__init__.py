@@ -191,27 +191,35 @@ class JsonRpc(JsonRpcBase):
             self.methods[name + '.' + k] = v
 
 
-
+import logging
+import sys
+logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
 class JsonRpcApplication(object):
     def __init__(self, rpcs=None):
         self.rpc = JsonRpc(rpcs)
 
 
     def __call__(self, environ, start_response):
+        logging.debug("jsonrpc")
+        logging.debug("check method")
         if environ['REQUEST_METHOD'] != "POST":
             start_response('405 Method Not Allowed',
                     [('Content-type', 'text/plain')])
             return ["405 Method Not Allowed"]
 
+        logging.debug("check content-type")
         if environ['CONTENT_TYPE'] != 'application/json':
             start_response('400 Bad Request',
                     [('Content-type', 'text/plain')])
             return ["Content-type must by application/json"]
 
         try:
-            body = environ['wsgi.input'].read(-1)
+            logging.debug("read body")
+            body = environ['wsgi.input'].read()
+            logging.debug(body)
             data = json.loads(body)
             resdata = self.rpc(data) 
+            logging.debug("response %s" % json.dumps(resdata))
         except ValueError, e:
             resdata = {'jsonrpc':'2.0',
                        'id':None,
@@ -227,13 +235,4 @@ class JsonRpcApplication(object):
         return []
 
 
-def make_app(global_conf, **app_conf):
-    conf = global_conf.copy()
-    conf.update(app_conf)
-
-    modname = conf["module"]
-    __import__(modname)
-    mod = sys.modules[modname]
-    obj = eval(conf["expression"], mod.__dict__)
-    return JsonRpcApplication(obj)
 

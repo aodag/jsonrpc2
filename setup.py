@@ -4,7 +4,7 @@ here = os.path.dirname(__file__)
 readme = open(os.path.join(here, "README.txt")).read()
 example = open(os.path.join(here, "rpc_example.txt")).read()
 changelog = open(os.path.join(here, "ChangeLog")).read()
-version="0.2.2"
+version="0.2.3"
 
 setup(
     name="jsonrpc2",
@@ -31,9 +31,22 @@ setup(
         "WebTest",
         "simplejson",
         ],
+    extras_require={
+        "PASTE":[
+            "PasteScript",
+        ],
+    },
     setup_requires=[
         "Nose",
         ],
     packages=find_packages("src", exclude=['tests']),
+    entry_points={
+        "paste.app_factory":[
+            "main=jsonrpc2.paste:make_app",
+        ],
+        "paste.paster_create_template":[
+            "paster_jsonrpc2=jsonrpc2.paste.templates:JsonRpcTemplate",
+        ],
+    },
 )
 
