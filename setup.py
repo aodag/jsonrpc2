@@ -25,6 +25,7 @@ setup(
     install_requires=[
     ],
     package_dir={'':'src'},
+    include_package_data=True,
     test_suite="nose.collector",
     tests_require=[
         "Nose",
@@ -38,6 +39,7 @@ setup(
     },
     setup_requires=[
         "Nose",
+        "hg.setuptools",
         ],
     packages=find_packages("src", exclude=['tests']),
     entry_points={
