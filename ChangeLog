@@ -17,6 +17,4 @@
 0.2.3
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- add entry point for paste.app_factory (TODO)
-- add PasteScript template (TODO)
-
+- fix: read body with CONTENT_LENGTH.

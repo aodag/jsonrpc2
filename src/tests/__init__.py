@@ -1,6 +1,12 @@
 # -*- coding:utf-8 -*-
 
-import simplejson as json
+try:
+    import json
+except ImportError:
+    import simplejson as json
+    import sys
+    sys.modules['json'] = json
+
 from webtest import TestApp
 from jsonrpc2 import JsonRpcApplication
 from webob import exc
