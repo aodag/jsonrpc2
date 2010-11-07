@@ -7,5 +7,7 @@ options.virtualenv = {
         "nose",
         "simplejson",
         "WebTest",
+        "docutils",
     ],
+    "no_site_packages":True,
 }
