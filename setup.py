@@ -4,7 +4,7 @@ here = os.path.dirname(__file__)
 readme = open(os.path.join(here, "README.txt")).read()
 example = open(os.path.join(here, "rpc_example.txt")).read()
 changelog = open(os.path.join(here, "ChangeLog")).read()
-version="0.2.2"
+version="0.2.3"
 
 setup(
     name="jsonrpc2",

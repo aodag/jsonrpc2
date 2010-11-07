@@ -208,8 +208,11 @@ class JsonRpcApplication(object):
                     [('Content-type', 'text/plain')])
             return ["Content-type must by application/json"]
 
+        content_length = -1
+        if "CONTENT_LENGTH" in environ:
+            content_length = int(environ["CONTENT_LENGTH"])
         try:
-            body = environ['wsgi.input'].read(-1)
+            body = environ['wsgi.input'].read(content_length)
             data = json.loads(body)
             resdata = self.rpc(data) 
         except ValueError, e:
