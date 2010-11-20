@@ -6,6 +6,12 @@ example = open(os.path.join(here, "rpc_example.txt")).read()
 changelog = open(os.path.join(here, "ChangeLog")).read()
 version="0.3"
 
+tests_require = [
+    "Nose",
+    "WebTest",
+    "simplejson",
+]
+
 setup(
     name="jsonrpc2",
     description="WSGI Framework for JSON RPC 2.0",
@@ -26,20 +32,13 @@ setup(
     ],
     include_package_data=True,
     test_suite="nose.collector",
-    tests_require=[
-        "Nose",
-        "WebTest",
-        "simplejson",
-        ],
+    tests_require=tests_require,
     extras_require={
         "PASTE":[
             "PasteScript",
         ],
+        "test":tests_require,
     },
-    setup_requires=[
-        "Nose",
-        "hg.setuptools",
-        ],
     packages=find_packages(exclude=['tests']),
     entry_points={
         "paste.app_factory":[
