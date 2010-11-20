@@ -4,7 +4,7 @@ here = os.path.dirname(__file__)
 readme = open(os.path.join(here, "README")).read()
 example = open(os.path.join(here, "rpc_example.txt")).read()
 changelog = open(os.path.join(here, "ChangeLog")).read()
-version="0.3"
+version="0.3a2"
 
 tests_require = [
     "Nose",
@@ -41,6 +41,9 @@ setup(
     },
     packages=find_packages(exclude=['tests']),
     entry_points={
+        "console_scripts":[
+            "runjsonrpc2=jsonrpc2.cmd:main",
+        ],
         "paste.app_factory":[
             "main=jsonrpc2.paste:make_app",
         ],
