@@ -213,10 +213,11 @@ class JsonRpcApplication(object):
                     [('Content-type', 'text/plain')])
             return ["Content-type must by application/json"]
 
+        content_length = -1
+        if "CONTENT_LENGTH" in environ:
+            content_length = int(environ["CONTENT_LENGTH"])
         try:
-            logging.debug("read body")
-            body = environ['wsgi.input'].read()
-            logging.debug(body)
+            body = environ['wsgi.input'].read(content_length)
             data = json.loads(body)
             resdata = self.rpc(data) 
             logging.debug("response %s" % json.dumps(resdata))
