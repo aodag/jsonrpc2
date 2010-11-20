@@ -138,7 +138,7 @@ class JsonRpcBase(object):
             elif isinstance(params, dict):
                 result = method(**dict([(str(k), v) for k, v in params.iteritems()]))
             else:
-                raise JsonRpcException(data.get('id'), METHOD_NOT_FOUND)
+                raise JsonRpcException(data.get('id'), INVALID_PARAMS)
             resdata = None
             if data.get('id'):
 
@@ -148,6 +148,8 @@ class JsonRpcBase(object):
                     'result':result,
                     }
             return resdata
+        except JsonRpcException, e:
+            raise e
         except Exception, e:
             raise JsonRpcException(data.get('id'), INTERNAL_ERROR, data=str(e))
 
@@ -185,11 +187,12 @@ class JsonRpc(JsonRpcBase):
     def __init__(self, methods=None):
         super(JsonRpc, self).__init__(methods)
 
-    def addModule(self, mod):
+    def add_module(self, mod):
         name = mod.__name__
         for k, v in ((k, v) for k, v in mod.__dict__.iteritems() if not k.startswith('_') and callable(v)):
             self.methods[name + '.' + k] = v
 
+    addModule = add_module
 
 import logging
 import sys
