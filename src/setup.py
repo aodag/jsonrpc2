@@ -4,7 +4,7 @@ here = os.path.dirname(__file__)
 readme = open(os.path.join(here, "README")).read()
 example = open(os.path.join(here, "rpc_example.txt")).read()
 changelog = open(os.path.join(here, "ChangeLog")).read()
-version="0.2.3"
+version="0.3"
 
 setup(
     name="jsonrpc2",
@@ -24,7 +24,6 @@ setup(
     version=version,
     install_requires=[
     ],
-    package_dir={'':'src'},
     include_package_data=True,
     test_suite="nose.collector",
     tests_require=[
@@ -41,7 +40,7 @@ setup(
         "Nose",
         "hg.setuptools",
         ],
-    packages=find_packages("src", exclude=['tests']),
+    packages=find_packages(exclude=['tests']),
     entry_points={
         "paste.app_factory":[
             "main=jsonrpc2.paste:make_app",
