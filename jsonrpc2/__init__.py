@@ -23,19 +23,8 @@
 
 """
 http://groups.google.com/group/json-rpc/web/json-rpc-2-0
-
-errors:
-
-code 	message 	meaning
--32700 	Parse error 	Invalid JSON was received by the server.
-An error occurred on the server while parsing the JSON text.
--32600 	Invalid Request 	The JSON sent is not a valid Request object.
--32601 	Method not found 	The method does not exist / is not available.
--32602 	Invalid params 	Invalid method parameter(s).
--32603 	Internal error 	Internal JSON-RPC error.
--32099 to -32000 	Server error 	Reserved for implementation-defined server-errors.
-
 """
+
 PARSE_ERROR = -32700
 INVALID_REQUEST = -32600
 METHOD_NOT_FOUND = -32601
@@ -62,6 +51,26 @@ import itertools
 
 class JsonRpcException(Exception):
     """
+    Exception for json rpc errors.
+
+    errors
+
+    +-----------------+------------------+--------------------------------------------------------------------------------------------------------+
+    |code             |message           | meaning                                                                                                |
+    +=================+==================+========================================================================================================+
+    |-32700           | Parse error      | Invalid JSON was received by the server.  An error occurred on the server while parsing the JSON text. |
+    +-----------------+------------------+--------------------------------------------------------------------------------------------------------+
+    |-32600           | Invalid Request  | The JSON sent is not a valid Request object.                                                           |
+    +-----------------+------------------+--------------------------------------------------------------------------------------------------------+
+    |-32601           | Method not found | The method does not exist / is not available.                                                          |
+    +-----------------+------------------+--------------------------------------------------------------------------------------------------------+
+    |-32602           | Invalid params   | Invalid method parameter(s).                                                                           |
+    +-----------------+------------------+--------------------------------------------------------------------------------------------------------+
+    |-32603           | Internal error   | Internal JSON-RPC error.                                                                               |
+    +-----------------+------------------+--------------------------------------------------------------------------------------------------------+
+    |-32099 to -32000 | Server error     | Reserved for implementation-defined server-errors.                                                     |
+    +-----------------+------------------+--------------------------------------------------------------------------------------------------------+
+
     >>> exc = JsonRpcException(1, INVALID_REQUEST)
     >>> str(exc)
     '{"jsonrpc": "2.0", "id": 1, "error": {"message": "Invalid Request", "code": -32600}}'
@@ -94,6 +103,9 @@ class JsonRpcException(Exception):
         return json.dumps(self.as_dict())
 
 class JsonRpcBase(object):
+    """ jsonrpc2 base engine
+    """
+
     def __init__(self, methods=None):
         if methods is not None:
             self.methods = methods
@@ -101,6 +113,9 @@ class JsonRpcBase(object):
             self.methods = {}
 
     def load_method(self, method):
+        """ load method named ``method``.
+        ``method`` is split to package name and function name by ':'.
+        """
         import sys
         module_name, func_name = method.split(':', 1)
         __import__(module_name)
@@ -160,6 +175,7 @@ class JsonRpcBase(object):
             return e.as_dict()
 
     def __call__(self, data):
+        """ execute rpc represented ``data`` """
         if isinstance(data, dict):
             resdata = self._call(data)
         elif isinstance(data, list):
@@ -177,6 +193,9 @@ class JsonRpcBase(object):
         return self.methods[key]
 
     def __setitem__(self, key, value):
+        """ register rpc function as ``key``.
+        ``value`` is callable object or dotted name.
+        """
         self.methods[key] = value
 
     def __delitem__(self, key):
@@ -188,6 +207,9 @@ class JsonRpc(JsonRpcBase):
         super(JsonRpc, self).__init__(methods)
 
     def add_module(self, mod):
+        """ register all callable in ``mod`` module.
+        if callable name is starts with '_', that is excepted. 
+        """
         name = mod.__name__
         for k, v in ((k, v) for k, v in mod.__dict__.iteritems() if not k.startswith('_') and callable(v)):
             self.methods[name + '.' + k] = v
@@ -197,8 +219,13 @@ class JsonRpc(JsonRpcBase):
 import logging
 import sys
 logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
+
 class JsonRpcApplication(object):
+    """ wsgi json rpc application.
+    """
     def __init__(self, rpcs=None):
+        """ ``rpcs`` is :class:JsonRpc
+        """
         self.rpc = JsonRpc(rpcs)
 
 
