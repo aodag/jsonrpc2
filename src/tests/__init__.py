@@ -281,7 +281,7 @@ def test_add_module():
     assert len(app.rpc.methods) == 2
 
     app = TestApp(app)
-    data = {"jsonrpc": "2.0", "method": "jsonrpc2.tests.sample.greeting", "params": {u"n":u"あ"}, "id": 4}
+    data = {"jsonrpc": "2.0", "method": "tests.sample.greeting", "params": {u"n":u"あ"}, "id": 4}
     res = app.post('/', params=json.dumps(data),
                    extra_environ={'CONTENT_TYPE':'application/json'})
     assert res.status_int == 200
@@ -290,7 +290,7 @@ def test_add_module():
     print d['result'].encode('cp932')
     assert d['result'] == u'Hello, あ'
 
-    data = {"jsonrpc": "2.0", "method": "jsonrpc2.tests.sample.add", "params": [1, 2], "id": 4}
+    data = {"jsonrpc": "2.0", "method": "tests.sample.add", "params": [1, 2], "id": 4}
     res = app.post('/', params=json.dumps(data),
                    extra_environ={'CONTENT_TYPE':'application/json'})
     assert res.status_int == 200
@@ -300,7 +300,7 @@ def test_add_module():
 
 
 def test_lazy_loading1():
-    app = JsonRpcApplication(rpcs={"greeting":"jsonrpc2.tests.sample:greeting"})
+    app = JsonRpcApplication(rpcs={"greeting":"tests.sample:greeting"})
     app = TestApp(app)
     data = {"jsonrpc": "2.0", "method": "greeting", "params": {u"n":u"あ"}, "id": 4}
     res = app.post('/', params=json.dumps(data),
