@@ -38,6 +38,22 @@ app = createapp()
 rpc call with positional parameters:
 """
 
+def test_mimetype_with_charset():
+    """
+    --> {"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}
+    <-- {"jsonrpc": "2.0", "result": 19, "id": 1}
+    """
+    data = {"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}
+    
+    res = app.post('/', params=json.dumps(data),
+                   extra_environ={'CONTENT_TYPE':'application/json;charset=utf-8'})
+    assert res.status_int == 200
+    print res.body
+    data = res.json
+    assert data['jsonrpc'] == '2.0'
+    assert data['result'] == 19
+    assert data['id'] == 1
+
 def test_positional_params1():
     """
     --> {"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}
