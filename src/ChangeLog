@@ -8,6 +8,11 @@ ChangeLog
 - Paste Scripte templates
 - runjsonrpc2 command
 
+0.3.1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- fix bugs (content-type with charset)
+
 0.2
 -----------------------------------------------
 
