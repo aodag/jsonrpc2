@@ -82,3 +82,14 @@ lazy loading::
  >>> res.json
  {'jsonrpc': '2.0', 'id': 'sample.add', 'result': 3}
 
+
+extra vars
+==================
+
+::
+
+ >>> from jsonrpc2 import JsonRpc
+ >>> rpc = JsonRpc()
+ >>> rpc['add'] = lambda a, b: a + b
+ >>> rpc({'jsonrpc': '2.0', 'method': 'add', 'id': 'rpc-1', 'params': {'a': 2}}, b=3)
+ {'jsonrpc': '2.0', 'id': 'rpc-1', 'result': 5}
