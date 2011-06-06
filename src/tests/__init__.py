@@ -8,6 +8,7 @@ except ImportError:
     sys.modules['json'] = json
 
 from webtest import TestApp
+from jsonrpc2 import JsonRpc
 from jsonrpc2 import JsonRpcApplication
 from webob import exc
 
@@ -327,3 +328,9 @@ def test_lazy_loading1():
     assert d['result'] == u'Hello, あ'
 
 
+def test_extra_vars():
+    rpc = JsonRpc()
+    rpc['add'] = lambda a, b: a + b
+    args = {'a': 1}
+    result = rpc({'jsonrpc': '2.0', 'method': 'add', 'id': 'test-rpc', 'params': args}, b=3)
+    assert result['result'] == 4

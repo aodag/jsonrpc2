@@ -13,6 +13,10 @@ ChangeLog
 
 - fix bugs (content-type with charset)
 
+0.3.2
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- enable to pass the extra vars to procedures
+
 0.2
 -----------------------------------------------
 

@@ -107,7 +107,7 @@ class JsonRpcBase(object):
         method = getattr(sys.modules[module_name], func_name)
         return method
 
-    def process(self, data):
+    def process(self, data, extra_vars):
 
         if data.get('jsonrpc') != "2.0":
             raise JsonRpcException(data.get('id'), INVALID_REQUEST)
@@ -134,9 +134,11 @@ class JsonRpcBase(object):
         try:
             params = data.get('params', [])
             if isinstance(params, list):
-                result = method(*params)
+                result = method(*params, **extra_vars)
             elif isinstance(params, dict):
-                result = method(**dict([(str(k), v) for k, v in params.iteritems()]))
+                kwargs = dict([(str(k), v) for k, v in params.iteritems()])
+                kwargs.update(extra_vars)
+                result = method(**kwargs)
             else:
                 raise JsonRpcException(data.get('id'), INVALID_PARAMS)
             resdata = None
@@ -153,15 +155,15 @@ class JsonRpcBase(object):
         except Exception, e:
             raise JsonRpcException(data.get('id'), INTERNAL_ERROR, data=str(e))
 
-    def _call(self, data):
+    def _call(self, data, extra_vars):
         try:
-            return self.process(data)
+            return self.process(data, extra_vars)
         except JsonRpcException, e:
             return e.as_dict()
 
-    def __call__(self, data):
+    def __call__(self, data, **extra_vars):
         if isinstance(data, dict):
-            resdata = self._call(data)
+            resdata = self._call(data, extra_vars)
         elif isinstance(data, list):
             if len([x for x in data if not isinstance(x, dict)]):
                 resdata = {'jsonrpc':'2.0',
@@ -169,7 +171,7 @@ class JsonRpcBase(object):
                             'error':{'code':INVALID_REQUEST,
                                     'message':errors[INVALID_REQUEST]}}
             else:
-                resdata = [d for d in (self._call(d) for d in data) if d is not None]
+                resdata = [d for d in (self._call(d, extra_vars) for d in data) if d is not None]
             
         return resdata
 
