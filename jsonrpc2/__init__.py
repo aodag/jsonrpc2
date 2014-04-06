@@ -240,7 +240,7 @@ class JsonRpcApplication(object):
             return ["405 Method Not Allowed"]
 
         logger.debug("check content-type")
-        if environ['CONTENT_TYPE'].split(';', 1)[0] != 'application/json':
+        if environ['CONTENT_TYPE'].split(';', 1)[0] not in ('application/json', 'application/json-rpc'):
             start_response('400 Bad Request',
                     [('Content-type', 'text/plain')])
             return ["Content-type must by application/json"]

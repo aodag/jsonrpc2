@@ -59,7 +59,7 @@ def test_mimetype_with_charset():
     data = {"jsonrpc": "2.0", "method": "subtract", "params": [42, 23], "id": 1}
     
     res = app.post('/', params=json.dumps(data),
-                   extra_environ={'CONTENT_TYPE':'application/json;charset=utf-8'})
+                   extra_environ={'CONTENT_TYPE':'application/json-rpc;charset=utf-8'})
     assert res.status_int == 200
     data = res.json
     assert data['jsonrpc'] == '2.0'
