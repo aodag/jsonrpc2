@@ -1,7 +1,8 @@
 #
 from webtest import TestApp
-from nose import with_setup
-from nose.tools import *
+from testfixtures import compare
+#from nose import with_setup
+#from nose.tools import *
 from jsonrpc2 import JsonRpcApplication
 from functools import wraps
 import sys
@@ -33,7 +34,7 @@ def test_failure(app):
                 "CONTENT_TYPE":'application/json',
                 })
     print res.body
-    eq_(res.body, 
+    compare(res.body, 
             '{"jsonrpc": "2.0", '
             '"id": "hello", '
             '"error": {"message": "Invalid Params", "code": -32602}}')

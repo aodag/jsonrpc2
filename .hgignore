@@ -1,0 +1,7 @@
+syntax: glob
+.env
+.env27
+wheelhouse
+*.egg-info
+*.py[co]
+*~

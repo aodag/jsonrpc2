@@ -7,9 +7,9 @@ changelog = open(os.path.join(here, "ChangeLog")).read()
 version="0.3.2"
 
 tests_require = [
-    "Nose",
+    "pytest",
+    "pytest-cov",
     "WebTest",
-    "simplejson",
 ]
 
 setup(
@@ -31,7 +31,7 @@ setup(
     install_requires=[
     ],
     include_package_data=True,
-    test_suite="nose.collector",
+    test_suite="jsonrpc2",
     tests_require=tests_require,
     extras_require={
         "PASTE":[
