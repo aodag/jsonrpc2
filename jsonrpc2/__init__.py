@@ -41,12 +41,16 @@ INVALID_REQUEST = -32600
 METHOD_NOT_FOUND = -32601
 INVALID_PARAMS = -32602
 INTERNAL_ERROR = -32603
+GENERIC_APPLICATION_ERROR = -32000
+
 errors = {}
 errors[PARSE_ERROR] = "Parse Error"
 errors[INVALID_REQUEST] = "Invalid Request"
 errors[METHOD_NOT_FOUND] = "Method Not Found"
 errors[INVALID_PARAMS] = "Invalid Params"
 errors[INTERNAL_ERROR] = "Internal Error"
+errors[GENERIC_APPLICATION_ERROR] = "Application Error"
+
 import sys
 import json
 import logging
@@ -89,17 +93,30 @@ class JsonRpcException(Exception):
         return json.dumps(self.as_dict())
 
 class JsonRpcBase(object):
-    def __init__(self, methods=None):
+    def __init__(self, methods=None,
+                 application_errors={}):
         if methods is not None:
             self.methods = methods
         else:
             self.methods = {}
+
+        message = ('extra error code must '
+                   'be from {0} to {1}').format(-32099, -32001)
+        for code in application_errors.values():
+            if code < -32099 or code > -32001:
+                raise ValueError(message)
+        self.application_errors = application_errors.copy()
+        self.exceptable = tuple(application_errors)
 
     def load_method(self, method):
         module_name, func_name = method.split(':', 1)
         __import__(module_name)
         method = getattr(sys.modules[module_name], func_name)
         return method
+
+    def get_app_error_code(self, exc):
+        exc_type = type(exc)
+        return self.application_errors[exc_type]
 
     def process(self, data, extra_vars):
 
@@ -122,32 +139,51 @@ class JsonRpcBase(object):
 
 
         method = self.methods[methodname]
+        params = data.get('params', [])
+
         if isinstance(method, string_types):
             method = self.load_method(method)
 
-        try:
-            params = data.get('params', [])
-            if isinstance(params, list):
-                result = method(*params, **extra_vars)
-            elif isinstance(params, dict):
-                kwargs = dict([(str(k), v) for k, v in params.items()])
-                kwargs.update(extra_vars)
-                result = method(**kwargs)
-            else:
-                raise JsonRpcException(data.get('id'), INVALID_PARAMS)
-            resdata = None
-            if data.get('id'):
+        if not isinstance(params, (list, dict)):
+            raise JsonRpcException(data.get('id'), INVALID_PARAMS)
 
-                resdata = {
-                    'jsonrpc':'2.0',
-                    'id':data.get('id'),
-                    'result':result,
-                    }
-            return resdata
-        except JsonRpcException as e:
-            raise e
+        args = []
+        kwargs = {}
+        if isinstance(params, list):
+            args = params
+        elif isinstance(params, dict):
+            kwargs.update(params)
+            kwargs.update(extra_vars)
+
+        try:
+            result = method(*args, **kwargs)
+        except self.exceptable as e:
+            return {
+                'jsonrpc':'2.0',
+                'id':data.get('id'),
+                'error':{'code': self.get_app_error_code(e),
+                         'message': str(e), 
+                         'data': json.dumps(e.args)}
+            }
         except Exception as e:
-            raise JsonRpcException(data.get('id'), INTERNAL_ERROR, data=str(e))
+            return {
+                'jsonrpc':'2.0',
+                'id':data.get('id'),
+                'error':{'code': GENERIC_APPLICATION_ERROR,
+                         'message': str(e), 
+                         'data': json.dumps(e.args)}
+            }
+
+
+        if not data.get('id'):
+            return None
+
+        return {
+            'jsonrpc':'2.0',
+            'id':data.get('id'),
+            'result':result,
+        }
+
 
     def _call(self, data, extra_vars):
         try:
@@ -180,8 +216,8 @@ class JsonRpcBase(object):
 
 
 class JsonRpc(JsonRpcBase):
-    def __init__(self, methods=None):
-        super(JsonRpc, self).__init__(methods)
+    # def __init__(self, methods=None, application_errors={}):
+    #     super(JsonRpc, self).__init__(methods, application_errors)
 
     def add_module(self, mod):
         name = mod.__name__
@@ -191,8 +227,8 @@ class JsonRpc(JsonRpcBase):
     addModule = add_module
 
 class JsonRpcApplication(object):
-    def __init__(self, rpcs=None):
-        self.rpc = JsonRpc(rpcs)
+    def __init__(self, rpcs=None, application_errors={}):
+        self.rpc = JsonRpc(rpcs, application_errors)
 
 
     def __call__(self, environ, start_response):
