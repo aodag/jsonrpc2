@@ -4,7 +4,8 @@
    :target: https://drone.io/bitbucket.org/aodag/jsonrpc2/latest
 
 jsonrpc2 is WSGI Framework for JSON RPC 2.0.
-JSON RPC 2.0 Spec can be seen on http://groups.google.com/group/json-rpc/web/json-rpc-2-0
+
+JSON RPC 2.0 Spec can be seen on http://www.jsonrpc.org/specification .
 
 .. contents::
 
@@ -14,10 +15,6 @@ QuickStart
 install via pip::
 
  $ pip install jsonrpc2
-
-or install via easy_install::
-
- $ easy_install jsonrpc2
 
 write your procedures in hello.py::
 
@@ -49,7 +46,7 @@ Internal
 
 ::
 
- >>> import simplejson as json
+ >>> import json
  >>> from jsonrpc2 import JsonRpcApplication
 
 sample procedure::
@@ -74,7 +71,7 @@ call procedure::
 got results::
 
  >>> res.json
- {'jsonrpc': '2.0', 'id': 'greeting', 'result': 'Hello, world!'}
+ {u'jsonrpc': u'2.0', u'id': u'greeting', u'result': u'Hello, world!'}
 
 
 lazy loading::
@@ -83,7 +80,7 @@ lazy loading::
  >>> call_values = {'jsonrpc':'2.0', 'method':'sample.add', 'id':'sample.add', 'params':[1, 2]}
  >>> res = testapp.post('/', params=json.dumps(call_values), content_type="application/json")
  >>> res.json
- {'jsonrpc': '2.0', 'id': 'sample.add', 'result': 3}
+ {u'jsonrpc': u'2.0', u'id': u'sample.add', u'result': 3}
 
 
 extra vars
@@ -96,3 +93,18 @@ extra vars
  >>> rpc['add'] = lambda a, b: a + b
  >>> rpc({'jsonrpc': '2.0', 'method': 'add', 'id': 'rpc-1', 'params': {'a': 2}}, b=3)
  {'jsonrpc': '2.0', 'id': 'rpc-1', 'result': 5}
+
+handle errors
+=================
+
+::
+
+ >>> from jsonrpc2 import JsonRpc
+ >>> class MyException(Exception):
+ ...     pass
+ >>> def my_rpc():
+ ...     raise MyException()
+ >>> rpc = JsonRpc({'call': my_rpc}, {MyException: -32001})
+ >>> rpc({'jsonrpc': '2.0', 'method': 'call', 'id': 'rpc-1', 'params': []})
+ {'jsonrpc': '2.0', 'id': 'rpc-1', 'error': {'message': '', 'code': -32001, 'data': '[]'}}
+
