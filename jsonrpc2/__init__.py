@@ -57,8 +57,10 @@ except ImportError:
     except ImportError:
         import simplejson as json
         sys.modules['json'] = json
-
+import logging
 import itertools
+
+logger = logging.getLogger(__name__)
 
 class JsonRpcException(Exception):
     """
@@ -101,7 +103,6 @@ class JsonRpcBase(object):
             self.methods = {}
 
     def load_method(self, method):
-        import sys
         module_name, func_name = method.split(':', 1)
         __import__(module_name)
         method = getattr(sys.modules[module_name], func_name)
@@ -196,23 +197,20 @@ class JsonRpc(JsonRpcBase):
 
     addModule = add_module
 
-import logging
-import sys
-logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
 class JsonRpcApplication(object):
     def __init__(self, rpcs=None):
         self.rpc = JsonRpc(rpcs)
 
 
     def __call__(self, environ, start_response):
-        logging.debug("jsonrpc")
-        logging.debug("check method")
+        logger.debug("jsonrpc")
+        logger.debug("check method")
         if environ['REQUEST_METHOD'] != "POST":
             start_response('405 Method Not Allowed',
                     [('Content-type', 'text/plain')])
             return ["405 Method Not Allowed"]
 
-        logging.debug("check content-type")
+        logger.debug("check content-type")
         if environ['CONTENT_TYPE'].split(';', 1)[0] != 'application/json':
             start_response('400 Bad Request',
                     [('Content-type', 'text/plain')])
@@ -225,7 +223,7 @@ class JsonRpcApplication(object):
             body = environ['wsgi.input'].read(content_length)
             data = json.loads(body)
             resdata = self.rpc(data) 
-            logging.debug("response %s" % json.dumps(resdata))
+            logger.debug("response %s" % json.dumps(resdata))
         except ValueError, e:
             resdata = {'jsonrpc':'2.0',
                        'id':None,
