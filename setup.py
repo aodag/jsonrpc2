@@ -32,7 +32,7 @@ setup(
     author_email='aodagx@gmail.com',
     keywords='wsgi request web http json rpc',
     license="MIT",
-    url='http://hg.aodag.jp/jsonrpc2/',
+    url='https://github.com/aodag/jsonrpc2',
     version=version,
     install_requires=[
         "six",
