@@ -24,13 +24,23 @@ def get_data(*args):
 def raise_exception():
     raise Exception()
 
+class TestingException(Exception):
+    pass
+
+def raise_testing_exception():
+    raise TestingException()
+
 def createapp():
     app = JsonRpcApplication(
         dict(subtract=subtract,
              update=update,
              notify_hello=notify_hello,
              get_data=get_data,
-             raise_exception=raise_exception))
+             raise_exception=raise_exception,
+             raise_testing_exception=raise_testing_exception),
+        application_errors={
+            TestingException: -32001
+        })
     app = TestApp(app)
     return app
 
@@ -167,7 +177,7 @@ def test_non_existent():
     assert d['error']['code'] == -32601
 
 
-def test_application_error():
+def test_generic_application_error():
     data = {"jsonrpc": "2.0", "method": "raise_exception", "id":"1"}
     res = app.post('/', params=json.dumps(data),
                    extra_environ={'CONTENT_TYPE':'application/json'})
@@ -175,6 +185,15 @@ def test_application_error():
     d = res.json
     assert d.get('error')
     assert d['error']['code'] == -32000
+
+def test_application_error():
+    data = {"jsonrpc": "2.0", "method": "raise_testing_exception", "id":"1"}
+    res = app.post('/', params=json.dumps(data),
+                   extra_environ={'CONTENT_TYPE':'application/json'})
+    assert res.status_int == 200
+    d = res.json
+    assert d.get('error')
+    assert d['error']['code'] == -32001
 
 
 def test_invalid_json():

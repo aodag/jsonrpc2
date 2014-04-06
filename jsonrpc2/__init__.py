@@ -93,17 +93,30 @@ class JsonRpcException(Exception):
         return json.dumps(self.as_dict())
 
 class JsonRpcBase(object):
-    def __init__(self, methods=None):
+    def __init__(self, methods=None,
+                 application_errors={}):
         if methods is not None:
             self.methods = methods
         else:
             self.methods = {}
+
+        message = ('extra error code must '
+                   'be from {0} to {1}').format(-32099, -32001)
+        for code in application_errors.values():
+            if code < -32099 or code > -32001:
+                raise ValueError(message)
+        self.application_errors = application_errors.copy()
+        self.exceptable = tuple(application_errors)
 
     def load_method(self, method):
         module_name, func_name = method.split(':', 1)
         __import__(module_name)
         method = getattr(sys.modules[module_name], func_name)
         return method
+
+    def get_app_error_code(self, exc):
+        exc_type = type(exc)
+        return self.application_errors[exc_type]
 
     def process(self, data, extra_vars):
 
@@ -144,6 +157,14 @@ class JsonRpcBase(object):
 
         try:
             result = method(*args, **kwargs)
+        except self.exceptable as e:
+            return {
+                'jsonrpc':'2.0',
+                'id':data.get('id'),
+                'error':{'code': self.get_app_error_code(e),
+                         'message': str(e), 
+                         'data': json.dumps(e.args)}
+            }
         except Exception as e:
             return {
                 'jsonrpc':'2.0',
@@ -195,8 +216,8 @@ class JsonRpcBase(object):
 
 
 class JsonRpc(JsonRpcBase):
-    def __init__(self, methods=None):
-        super(JsonRpc, self).__init__(methods)
+    # def __init__(self, methods=None, application_errors={}):
+    #     super(JsonRpc, self).__init__(methods, application_errors)
 
     def add_module(self, mod):
         name = mod.__name__
@@ -206,8 +227,8 @@ class JsonRpc(JsonRpcBase):
     addModule = add_module
 
 class JsonRpcApplication(object):
-    def __init__(self, rpcs=None):
-        self.rpc = JsonRpc(rpcs)
+    def __init__(self, rpcs=None, application_errors={}):
+        self.rpc = JsonRpc(rpcs, application_errors)
 
 
     def __call__(self, environ, start_response):
