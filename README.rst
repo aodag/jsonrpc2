@@ -97,6 +97,7 @@ extra vars
 handle errors
 =================
 
+::
 
  >>> from jsonrpc2 import JsonRpc
  >>> class MyException(Exception):
