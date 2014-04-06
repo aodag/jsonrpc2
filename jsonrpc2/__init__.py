@@ -41,12 +41,16 @@ INVALID_REQUEST = -32600
 METHOD_NOT_FOUND = -32601
 INVALID_PARAMS = -32602
 INTERNAL_ERROR = -32603
+GENERIC_APPLICATION_ERROR = -32000
+
 errors = {}
 errors[PARSE_ERROR] = "Parse Error"
 errors[INVALID_REQUEST] = "Invalid Request"
 errors[METHOD_NOT_FOUND] = "Method Not Found"
 errors[INVALID_PARAMS] = "Invalid Params"
 errors[INTERNAL_ERROR] = "Internal Error"
+errors[GENERIC_APPLICATION_ERROR] = "Application Error"
+
 import sys
 import json
 import logging
@@ -122,32 +126,43 @@ class JsonRpcBase(object):
 
 
         method = self.methods[methodname]
+        params = data.get('params', [])
+
         if isinstance(method, string_types):
             method = self.load_method(method)
 
-        try:
-            params = data.get('params', [])
-            if isinstance(params, list):
-                result = method(*params, **extra_vars)
-            elif isinstance(params, dict):
-                kwargs = dict([(str(k), v) for k, v in params.items()])
-                kwargs.update(extra_vars)
-                result = method(**kwargs)
-            else:
-                raise JsonRpcException(data.get('id'), INVALID_PARAMS)
-            resdata = None
-            if data.get('id'):
+        if not isinstance(params, (list, dict)):
+            raise JsonRpcException(data.get('id'), INVALID_PARAMS)
 
-                resdata = {
-                    'jsonrpc':'2.0',
-                    'id':data.get('id'),
-                    'result':result,
-                    }
-            return resdata
-        except JsonRpcException as e:
-            raise e
+        args = []
+        kwargs = {}
+        if isinstance(params, list):
+            args = params
+        elif isinstance(params, dict):
+            kwargs.update(params)
+            kwargs.update(extra_vars)
+
+        try:
+            result = method(*args, **kwargs)
         except Exception as e:
-            raise JsonRpcException(data.get('id'), INTERNAL_ERROR, data=str(e))
+            return {
+                'jsonrpc':'2.0',
+                'id':data.get('id'),
+                'error':{'code': GENERIC_APPLICATION_ERROR,
+                         'message': str(e), 
+                         'data': json.dumps(e.args)}
+            }
+
+
+        if not data.get('id'):
+            return None
+
+        return {
+            'jsonrpc':'2.0',
+            'id':data.get('id'),
+            'result':result,
+        }
+
 
     def _call(self, data, extra_vars):
         try:

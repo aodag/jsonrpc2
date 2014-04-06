@@ -21,8 +21,16 @@ def notify_hello(*args):
 def get_data(*args):
     return ["hello", 5]
 
+def raise_exception():
+    raise Exception()
+
 def createapp():
-    app = JsonRpcApplication(dict(subtract=subtract, update=update, notify_hello=notify_hello, get_data=get_data))
+    app = JsonRpcApplication(
+        dict(subtract=subtract,
+             update=update,
+             notify_hello=notify_hello,
+             get_data=get_data,
+             raise_exception=raise_exception))
     app = TestApp(app)
     return app
 
@@ -157,6 +165,16 @@ def test_non_existent():
     d = res.json
     assert d.get('error')
     assert d['error']['code'] == -32601
+
+
+def test_application_error():
+    data = {"jsonrpc": "2.0", "method": "raise_exception", "id":"1"}
+    res = app.post('/', params=json.dumps(data),
+                   extra_environ={'CONTENT_TYPE':'application/json'})
+    assert res.status_int == 200
+    d = res.json
+    assert d.get('error')
+    assert d['error']['code'] == -32000
 
 
 def test_invalid_json():
