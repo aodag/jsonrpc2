@@ -48,17 +48,10 @@ errors[METHOD_NOT_FOUND] = "Method Not Found"
 errors[INVALID_PARAMS] = "Invalid Params"
 errors[INTERNAL_ERROR] = "Internal Error"
 import sys
-try:
-    import json
-except ImportError:
-    try:
-        import django.utils.simplejson as json
-        sys.modules['json'] = json
-    except ImportError:
-        import simplejson as json
-        sys.modules['json'] = json
+import json
 import logging
 import itertools
+from six import string_types
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +110,7 @@ class JsonRpcBase(object):
             raise JsonRpcException(data.get('id'), INVALID_REQUEST)
         
         methodname = data['method']
-        if not isinstance(methodname, basestring):
+        if not isinstance(methodname, string_types):
             raise JsonRpcException(data.get('id'), INVALID_REQUEST)
             
         if methodname.startswith('_'):
@@ -129,7 +122,7 @@ class JsonRpcBase(object):
 
 
         method = self.methods[methodname]
-        if isinstance(method, basestring):
+        if isinstance(method, string_types):
             method = self.load_method(method)
 
         try:
@@ -137,7 +130,7 @@ class JsonRpcBase(object):
             if isinstance(params, list):
                 result = method(*params, **extra_vars)
             elif isinstance(params, dict):
-                kwargs = dict([(str(k), v) for k, v in params.iteritems()])
+                kwargs = dict([(str(k), v) for k, v in params.items()])
                 kwargs.update(extra_vars)
                 result = method(**kwargs)
             else:
@@ -151,15 +144,15 @@ class JsonRpcBase(object):
                     'result':result,
                     }
             return resdata
-        except JsonRpcException, e:
+        except JsonRpcException as e:
             raise e
-        except Exception, e:
+        except Exception as e:
             raise JsonRpcException(data.get('id'), INTERNAL_ERROR, data=str(e))
 
     def _call(self, data, extra_vars):
         try:
             return self.process(data, extra_vars)
-        except JsonRpcException, e:
+        except JsonRpcException as e:
             return e.as_dict()
 
     def __call__(self, data, **extra_vars):
@@ -192,7 +185,7 @@ class JsonRpc(JsonRpcBase):
 
     def add_module(self, mod):
         name = mod.__name__
-        for k, v in ((k, v) for k, v in mod.__dict__.iteritems() if not k.startswith('_') and callable(v)):
+        for k, v in ((k, v) for k, v in mod.__dict__.items() if not k.startswith('_') and callable(v)):
             self.methods[name + '.' + k] = v
 
     addModule = add_module
@@ -221,10 +214,11 @@ class JsonRpcApplication(object):
             content_length = int(environ["CONTENT_LENGTH"])
         try:
             body = environ['wsgi.input'].read(content_length)
+            body = body.decode('utf-8')
             data = json.loads(body)
             resdata = self.rpc(data) 
             logger.debug("response %s" % json.dumps(resdata))
-        except ValueError, e:
+        except ValueError as e:
             resdata = {'jsonrpc':'2.0',
                        'id':None,
                        'error':{'code':PARSE_ERROR,
@@ -235,7 +229,7 @@ class JsonRpcApplication(object):
 
 
         if resdata:
-            return [json.dumps(resdata)]
+            return [json.dumps(resdata).encode('utf-8')]
         return []
 
 

@@ -13,18 +13,14 @@ except ImportError:
     sys.moduels['json'] = json
 
 
-def with_app(test_func):
+def _make_app():
     app = JsonRpcApplication()
     app.rpc['hello'] = lambda x : {"message":"hello %s" % x}
     app = TestApp(app)
+    return app
 
-    @wraps(test_func)
-    def dec():
-        return test_func(app)
-    return dec
-
-@with_app
-def test_failure(app):
+def test_failure():
+    app = _make_app()
     params = json.dumps({'jsonrpc':'2.0', 
         'method':'hello', 
         'params':"a", 
@@ -33,9 +29,9 @@ def test_failure(app):
             extra_environ={
                 "CONTENT_TYPE":'application/json',
                 })
-    print res.body
-    compare(res.body, 
-            '{"jsonrpc": "2.0", '
-            '"id": "hello", '
-            '"error": {"message": "Invalid Params", "code": -32602}}')
+
+    compare(res.json, 
+            {"jsonrpc": "2.0", 
+             "id": "hello", 
+             "error": {"message": "Invalid Params", "code": -32602}})
 
