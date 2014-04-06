@@ -1,7 +1,7 @@
 .. -*- restructuredtext -*-
 
-.. image:: https://drone.io/bitbucket.org/aodag/jsonrpc2/status.png
-   :target: https://drone.io/bitbucket.org/aodag/jsonrpc2/latest
+.. image:: https://travis-ci.org/aodag/jsonrpc2.svg?branch=master  
+   :target: https://travis-ci.org/aodag/jsonrpc2
 
 jsonrpc2 is WSGI Framework for JSON RPC 2.0.
 
