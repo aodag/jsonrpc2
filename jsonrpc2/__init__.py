@@ -103,8 +103,8 @@ class JsonRpcBase(object):
         message = ('extra error code must '
                    'be from {0} to {1}').format(-32099, -32001)
         for code in application_errors.values():
-            if code < -32099 or code > -32001:
-                raise ValueError(message)
+            if code < -32100 or code > -32001:
+                raise ValueError(message, code)
         self.application_errors = application_errors.copy()
         self.exceptable = tuple(application_errors)
 

@@ -4,7 +4,7 @@ here = os.path.dirname(__file__)
 readme = open(os.path.join(here, "README.rst")).read()
 example = open(os.path.join(here, "rpc_example.txt")).read()
 changelog = open(os.path.join(here, "ChangeLog")).read()
-version="0.3.2"
+version="0.4"
 
 tests_require = [
     "pytest",

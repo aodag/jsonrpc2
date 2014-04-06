@@ -1,6 +1,19 @@
 ChangeLog
 ===================================================
 
+0.4
+-----------------------------------------------
+feature
+
+- added supporting py3
+- added registering application errors
+
+fixed bugs
+
+- Dont raise internal error for server exceptions `#13 <https://bitbucket.org/aodag/jsonrpc2/issue/13/dont-raise-internal-error-for-server>`_
+- incorrect Content-type `#15 https://bitbucket.org/aodag/jsonrpc2/issue/15/incorrect-content-type`_
+- internal logging configuration broken `#16 <https://bitbucket.org/aodag/jsonrpc2/issue/16/internal-logging-configuration-broken>`_
+
 0.3
 -----------------------------------------------
 
