@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 here = os.path.dirname(__file__)
-readme = open(os.path.join(here, "README")).read()
+readme = open(os.path.join(here, "README.rst")).read()
 example = open(os.path.join(here, "rpc_example.txt")).read()
 changelog = open(os.path.join(here, "ChangeLog")).read()
 version="0.3.2"
