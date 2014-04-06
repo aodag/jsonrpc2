@@ -43,6 +43,7 @@ Notification::
  >>> rpc({"jsonrpc": "2.0", "method": "foobar"})
 
 Procedure Call of non-existent procedure::
+
  >>> del rpc['foobar']
  >>> rpc({"jsonrpc": "2.0", "method": "foobar", "id": "1"})
  {'jsonrpc': '2.0', 'id': '1', 'error': {'message': 'Method Not Found', 'code': -32601}}
